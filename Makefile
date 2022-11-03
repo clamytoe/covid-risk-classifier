@@ -11,7 +11,7 @@ EPHEMERAL_FILES= *.log *.tmp .mypy_cache __pycache__
 RM= /bin/rm -f
 
 # Define the make commands
-.PHONY: train model classifier docker tag push serve test load_test
+.PHONY: classifier docker env dev load_test model push serve tag test train
 
 # Define the rules
 all: train model classifier docker tag serve
@@ -47,13 +47,13 @@ $(MY_IMAGE):
 
 tag: $(MY_IMAGE)
 
-serve:
-	@echo Starting classifier service
-	docker run -it --rm -p 3000:3000 $(BENTOML_CLASSIFIER) serve --production
+dev:
+	@echo Create virtual environment with developer dependencies
+	pipenv install --dev
 
-test:
-	@echo Running test
-	python test_service.py
+env:
+	@echo Create virtual environment
+	pipenv install
 
 load_test:
 	@echo Running load tester
@@ -62,6 +62,14 @@ load_test:
 push:
 	@echo Pushing image $(MY_IMAGE) to docker hub
 	docker push $(MY_IMAGE)
+
+serve:
+	@echo Starting classifier service
+	docker run -it --rm -p 3000:3000 $(BENTOML_CLASSIFIER) serve --production
+
+test:
+	@echo Running test
+	python test_service.py
 
 # Use debug rule to check that all of the variables were
 # constructed properly.
@@ -85,6 +93,8 @@ help:
 	@echo '   make all                            runs through the whole process     '
 	@echo '   make clean                          remove the generated files         '
 	@echo '   make debug                          prints all of the variables used   '
+	@echo '   make env                            creates virtual env from Pipfile   '
+	@echo '   make dev                            creates virtual development env    '
 	@echo '   make train                          (re)trains the model               '
 	@echo '   make model                          creates a new bentoml model        '
 	@echo '   make classifier                     creates a new bentoml classifier   '
