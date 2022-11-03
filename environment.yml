@@ -1,0 +1,7 @@
+name: py310
+channels:
+  - defaults
+dependencies:
+  - python=3.10.6
+  - pipenv
+prefix: /home/clamytoe/miniconda3/envs/py310
