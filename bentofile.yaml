@@ -1,0 +1,15 @@
+service: "service.py:svc"
+description: "file: ./SERVICE.md"
+labels:
+  owner: "Martin Uribe"
+  email: "clamytoe@gmail.com"
+  stage: "dev"
+  version: "2.0.1"
+include:
+  - "*.py"
+python:
+  packages:
+    - "loguru"
+    - "pydantic"
+    - "scikit-learn==1.1.2"
+    - "xgboost"
