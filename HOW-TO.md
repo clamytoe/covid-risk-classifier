@@ -12,7 +12,40 @@
            ▀                                                                                    
 ```
 
-## Finding useful scripts
+## Setting up environment
+
+The first thing to do is to replicate the virtual environment.
+The project uses Python 3.10.6.
+In order to get things to work correctly, I recommend that you duplicate it as best as possible.
+
+### Anaconda workflow
+
+If you are using Anaconda, I got you fam.
+Just run the following commands:
+
+```bash
+conda env create .
+```
+
+Then activate the environment and install the rest of the required packages:
+
+```bash
+conda activate py310
+pipenv install --dev
+```
+
+### Different workflow
+
+If you're working in this field then you should be able to figure out how to get Python 3.10.6 installed.
+Once you have the right verion of Python, you can either install the dependencies with the `requirements.txt` file or install pipenv and do the same as above for the conda install.
+
+> **NOTE:** I recommend that you use a virtual environment.
+
+```bash
+pip install -r requirements.txt
+```
+
+## Scripts provided
 
 I have included some scripts to be used alongside the service:
 
