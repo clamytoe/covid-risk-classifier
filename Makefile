@@ -7,6 +7,8 @@ BENTOML_MODEL= $(shell bentoml models list $(PROJECT)_model | grep -v Tag | head
 BENTOML_CLASSIFIER= $(shell bentoml list $(PROJECT)_classifier | grep -v Tag | head -n1 | awk '{print $$1}' | sed "s/:/\\\:/g")
 DOCKER_IMAGE= $(shell docker images $(PROJECT)_classifier | grep -v TAG | head -n1 | awk '{print $$1":"$$2}' | sed "s/:/\\\:/g")_docker
 MY_IMAGE= $(USER)/$(PROJECT)_classifier\:latest
+EPHEMERAL_FILES= *.log *.tmp .mypy_cache __pycache__
+RM= /bin/rm -f
 
 # Define the make commands
 .PHONY: train model classifier docker tag push serve test load_test
@@ -100,5 +102,4 @@ help:
 
 # Specify clean-up rules.
 clean:
-	@/bin/rm -f *.log *.bin .mypy_cache __pycache__
-
+	$(RM) $(EPHEMERAL_FILES)
