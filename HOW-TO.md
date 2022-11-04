@@ -52,8 +52,50 @@ I have included some scripts to be used alongside the service:
 * `train.py` - Generates a pickled version of the model.
 * `create_bento_model.py` - Generates bentoml model from the pickled model.
 * `service.py` - Runs the service.
-* `test_service.py` - Tests the service.
-* `locustfile.py` - Load tests the service.
+* `predict.py` - Tests the service by generating some predictions.
+* `locustfile.py` - For load testing the service.
+* `Makefile` - Used to run all of the above and more.
+
+### Makefile
+
+The Makefie will simplify the use of this project:
+
+```make
+make help
+Makefile for generating and deploying the covid risk classifier model
+
+Usage:
+   make help                           prints this message
+   make all                            runs through the whole process
+   make classifier                     creates a new bentoml classifier
+   make clean                          remove the generated files
+   make debug                          prints all of the variables used
+   make docker                         creates a new docker image
+   make model                          creates a new bentoml model
+   make predict                        tests some sample predictions
+   make push                           pushes docker image to docker hub
+   make serve                          start the server for development
+   make serve-docker                   start the server from docker image
+   make shell                          open a shell in running container
+   make tag                            tags the new docker image
+   make train                          (re)trains the model
+   make -n                             prints the commands without
+                                       executing them
+
+Example:
+   make -n train                       would display the command for
+                                       training a new model
+```
+
+If you want to go from nothing to running the service locally, just use the `make` command by itself:
+
+```text
+make
+Training and saving the model...
+Generating bentoml model from xgboost_eta=0.3_max_depth=5_min_child_weight=1.bin...
+Generating classifier from latest covid_risk_model\:k5afpns3gogiq567...
+Starting classifier service for development...
+```
 
 ### train.py
 
@@ -62,7 +104,6 @@ This script will train and save the model as a pickle file.
 ```bash
 python train.py
 saved: xgboost_eta=0.3_max_depth=5_min_child_weight=1.bin
-...
 ```
 
 > It can also generate 10 randomly selected patients along with their predictions and actual values.
@@ -150,13 +191,13 @@ The data that it takes is in `json` format and should be formated like this:
 }
 ```
 
-### test_service.py
+### predict.py
 
 This script is used to test the service automatically.
 Just make sure that the service is running.
 
 ```bash
-python test_service.py
+python predict.py
 actual=0 DANGER 0.6464744210243225
 actual=1 DANGER 0.9937990307807922
 actual=0 SAFE 0.003976976033300161
@@ -171,13 +212,14 @@ actual=0 SAFE 0.0005494322977028787
 
 ### locusfile.py
 
-This script is used to load test the service and can be started with the following command:
+This script is used to run a load tester to stress test the service and can be started with the following command:
 
 ```bash
 locust -H http://localhost:3000
 ```
 
-Then open a browser to <http://localhost:8089> and adjust the desired number of users and spawn rate for the load test from the Web UI and start swarming.
+Then open a browser to [http://localhost:8089](http://localhost:8089).
+Adjust the number of desired users and the spawn rate and start swarming.
 
 ## Building the classifier
 
@@ -281,16 +323,16 @@ To run your newly built Bento container, pass "covid_risk_classifier:t5kuzvk2jcr
 
 ## Start your bentoml docker image
 
-To start the iamge, run the following command:
+To start the service from the docker image, run the following command:
 
 ```bash
 docker run -it --rm -p 3000:3000 covid_risk_classifier:t5kuzvk2jcrawdg5 serve --production
 ```
 
-You can test your docker container with `test_service.py` the same way you tested the local server:
+You can test your docker container with the `perdict.py` script, the same way you did for testing the bentoml service:
 
 ```bash
-python test_service.py
+python predict.py
 actual=0 DANGER 0.6464744210243225
 actual=1 DANGER 0.9937990307807922
 actual=0 SAFE 0.003976976033300161
@@ -305,7 +347,7 @@ actual=0 SAFE 0.0005494322977028787
 
 ## Push your image to docker hub
 
-First you will have to name your image with your name and give it a tag.
+First you will have to tag your image with your docker hub user name.
 That can be done like this:
 
 ```bash
@@ -324,7 +366,7 @@ docker push clamytoe/covid_risk_classifier:latest
 
 ## Using your tagged docker image
 
-Now that the image name has been tagged with your user name the service can be started like this:
+Now that the image has been tagged with your user name the service can be started like this:
 
 ```bash
 docker run -it --rm -p 3000:3000 clamytoe/covid_risk_classifier serve --production
