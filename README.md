@@ -12,31 +12,21 @@
            ▀                                                                                    
 ```
 
-## How likely are you to die if you take the vax?
+## What does this do?
 
-That is the question that I am going to attempt to tackle here.
-I must admit that I am not a healthcare professional or work in the healthcare industry.
-This is solely and academic exercise and the results should not be relied upon for any healthcare decisions.
+This classifier will predict the likelyhood of someone dying from taking the covid vaccination.
+The dataset was collected from the [Vaccine Adverse Event Reporting System (VAERS)](https://vaers.hhs.gov/), which is an arm of the [U.S. Department of Health & Human Services (HHS)](https://www.hhs.gov/).
 
-> Consult with your primary healthcare provider for any medical decisions.
+If you are interested in the actual raw data, the datasets can be downloaded from the VAERS Data Sets: [https://vaers.hhs.gov/data/datasets.html](https://vaers.hhs.gov/data/datasets.html).
 
-## Problem description
-
-In order to attempt to answer the question, I used data that I collected from the [Vaccine Adverse Event Reporting System (VAERS)](https://vaers.hhs.gov/), which is an arm of the [U.S. Department of Health & Human Services (HHS)](https://www.hhs.gov/).
-
-The datasets can be downloaded from: [VAERS Data Sets](https://vaers.hhs.gov/data/datasets.html).
-When I was exploring the subject, I downloaded the complete dataset, but I only ended up using the data for the year 2022.
+These are the two datasets that were used:
 
 * 2022VAERSDATA.csv
 * 2022VAERSVAX.csv
 
-## Short demo of it running on AWS
-
-[![demo](images/demo.png)](https://youtu.be/DiqvK98TG68)
-
 ## Running the model
 
-The fastest way for you to run this model is to simply get the [docker image](https://hub.docker.com/repository/docker/clamytoe/covid_risk_classifier) and run it locally.
+The fastest way for you to run this model is to simply get the docker image [clamytoe/covid_risk_classifier]](https://hub.docker.com/r/clamytoe/covid_risk_classifier) and run it locally.
 
 ### Download the image
 
@@ -100,9 +90,9 @@ In this case, we see that the user should be cautious if planning to take it.
 
 ## Sending multiple requests
 
-If entering each patient's data takes too long, you can do something like what I'm doing to test the service.
+If entering each patient's data takes too long, you can do something like what I'm doing with my `predict.py` script.
 
-*test_service.py:*
+*predict.py:*
 
 ```python
 import json
@@ -158,6 +148,37 @@ def test_service(data: List[CovidRisk]):
 if __name__ == "__main__":
     test_service(patients)
 ```
+
+## Logging
+
+I've enabled logging for the service.
+In order to be able to keep the logs you will have to create a local mount point or a docker volume.
+That's beyong the scope of this project, so I will leave that up to you to implement on your own.
+
+### Log file location
+
+* If you run the service locally, it is created in your project's root directory as `covid_risk_classifier.log`.
+* If you run it from a docker image, it is created in `/home/bentoml/bento/src` with the same name.
+
+*sample log entries:*
+
+```log
+cat covid_risk_classifier.log
+...
+2022-11-04T23:01:51.342665+0000 INFO Processing: state='tx' age_yrs=53 sex='f' disable=False other_meds=False cur_ill=False history=False prior_vax=False ofc_visit=False allergies=False vax_name='pfizer\\biontech' vax_dose_series=1
+2022-11-04T23:01:51.347936+0000 INFO Probability: 0.19510182738304138
+2022-11-04T23:01:51.348160+0000 INFO Prediction: {'status': 'SAFE', 'proba': 0.19510183}
+2022-11-04T23:01:51.351920+0000 INFO Processing: state='ca' age_yrs=3 sex='m' disable=False other_meds=False cur_ill=False history=False prior_vax=False ofc_visit=False allergies=False vax_name='moderna' vax_dose_series=1
+2022-11-04T23:01:51.357594+0000 INFO Probability: 0.003593571949750185
+2022-11-04T23:01:51.357773+0000 INFO Prediction: {'status': 'SAFE', 'proba': 0.003593572}
+2022-11-04T23:01:51.361099+0000 INFO Processing: state='tx' age_yrs=52 sex='f' disable=False other_meds=True cur_ill=False history=False prior_vax=False ofc_visit=False allergies=False vax_name='moderna' vax_dose_series=1
+2022-11-04T23:01:51.366562+0000 INFO Probability: 0.13526801764965057
+2022-11-04T23:01:51.366764+0000 INFO Prediction: {'status': 'SAFE', 'proba': 0.13526802}
+```
+
+## Short demo of it running on AWS
+
+[![demo](images/demo.png)](https://youtu.be/DiqvK98TG68)
 
 ## Further reading
 
