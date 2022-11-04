@@ -6,70 +6,63 @@ PICKLE= $(shell ls -alt xgboost*.bin | head -n1 | awk '{print $$9}')
 BENTOML_MODEL= $(shell bentoml models list $(PROJECT)_model | grep -v Tag | head -n1 | awk '{print $$1}' | sed "s/:/\\\:/g")
 BENTOML_CLASSIFIER= $(shell bentoml list $(PROJECT)_classifier | grep -v Tag | head -n1 | awk '{print $$1}' | sed "s/:/\\\:/g")
 DOCKER_IMAGE= $(shell docker images $(PROJECT)_classifier | grep -v TAG | head -n1 | awk '{print $$1":"$$2}' | sed "s/:/\\\:/g")_docker
+CONTAINER= $(shell docker container ls | grep covid | rev | awk '{print $$1}' | rev)
 MY_IMAGE= $(USER)/$(PROJECT)_classifier\:latest
 EPHEMERAL_FILES= *.log *.tmp .mypy_cache __pycache__
 RM= /bin/rm -f
 
 # Define the make commands
-.PHONY: classifier docker env dev load_test model predict push serve tag train
+.PHONY: classifier docker load_test model predict push serve serve-prod shell tag train
 
 # Define the rules
-all: train model classifier docker tag serve
+all: train model classifier serve
 
 # Define each of the commands and specifying their outputs
-$(PICKLE): train.py
-	@echo Training and saving the model
-	python train.py
-
-train: $(PICKLE)
-
-$(BENTOML_MODEL):
-	@echo Generating bentoml model from $(PICKLE)
-	python create_bento_model.py
-
-model: $(BENTOML_MODEL)
-
-$(BENTOML_CLASSIFIER):
-	@echo Generating classifier from latest $(BENTOML_MODEL)
+classifier:
+	@echo Generating classifier from latest $(BENTOML_MODEL)...
 	bentoml build
 
-classifier: $(BENTOML_CLASSIFIER)
-
-$(DOCKER_IMAGE):
-	@echo Creating docker image from $(BENTOML_CLASSIFIER)
+docker:
+	@echo Creating docker image from $(BENTOML_CLASSIFIER)...
 	bentoml containerize $(BENTOML_CLASSIFIER)
 
-docker: $(DOCKER_IMAGE)
-
-$(MY_IMAGE):
-	@echo Tagging $(BENTOML_CLASSIFIER) for user $(USER)
-	docker tag $(BENTOML_CLASSIFIER) $(USER)/$(PROJECT)_classifier:latest
-
-tag: $(MY_IMAGE)
-
-dev:
-	@echo Create virtual environment with developer dependencies
-	pipenv install --dev
-
-env:
-	@echo Create virtual environment
-	pipenv install
-
 load_test:
-	@echo Running load tester
+	@echo Running load tester...
 	locust -H http://localhost:3000
 
+model:
+	@echo Generating bentoml model from $(PICKLE)...
+	python create_bento_model.py
+
 predict:
-	@echo Running prediction test
+	@echo Running the prediction test...
 	python predict.py
 
 push:
-	@echo Pushing image $(MY_IMAGE) to docker hub
+	@echo Pushing image $(MY_IMAGE) to docker hub...
 	docker push $(MY_IMAGE)
 
 serve:
-	@echo Starting classifier service
+	@echo Starting classifier service for development...
+	bentoml serve service:svc --reload
+
+serve-prod:
+	@echo Starting classifier service from the docker image for production...
 	docker run -it --rm -p 3000:3000 $(BENTOML_CLASSIFIER) serve --production
+
+shell:
+	@echo Gaining shell access to running container...
+	docker exec -it $(CONTAINER) bash
+
+tag:
+	@echo Tagging $(BENTOML_CLASSIFIER) for user $(USER)...
+	docker tag $(BENTOML_CLASSIFIER) $(USER)/$(PROJECT)_classifier:latest
+
+$(PICKLE): train.py
+	@echo Training and saving the model...
+	python train.py
+
+train: $(PICKLE)
 
 # Use debug rule to check that all of the variables were
 # constructed properly.
@@ -80,29 +73,29 @@ debug:
 	@echo '     BENTOML_MODEL: $(BENTOML_MODEL)'
 	@echo 'BENTOML_CLASSIFIER: $(BENTOML_CLASSIFIER)'
 	@echo '      DOCKER_IMAGE: $(DOCKER_IMAGE)'
+	@echo '         CONTAINER: $(CONTAINER)'
 	@echo '          MY_IMAGE: $(MY_IMAGE)'
 	@echo '            PICKLE: $(PICKLE)'
 
 # Simple help menu showing what commands are available
 # and what they do.
 help:
-	@echo 'Makefile for generating and deploying bentoml classification models       '
+	@echo 'Makefile for generating and deploying the covid risk classifier model     '
 	@echo '                                                                          '
 	@echo 'Usage:                                                                    '
 	@echo '   make help                           prints this message                '
 	@echo '   make all                            runs through the whole process     '
+	@echo '   make classifier                     creates a new bentoml classifier   '
 	@echo '   make clean                          remove the generated files         '
 	@echo '   make debug                          prints all of the variables used   '
-	@echo '   make env                            creates virtual env from Pipfile   '
-	@echo '   make dev                            creates virtual development env    '
-	@echo '   make train                          (re)trains the model               '
-	@echo '   make model                          creates a new bentoml model        '
-	@echo '   make classifier                     creates a new bentoml classifier   '
 	@echo '   make docker                         creates a new docker image         '
-	@echo '   make tag                            tags the new docker image          '
-	@echo '   make serve                          start the classification service   '
+	@echo '   make model                          creates a new bentoml model        '
 	@echo '   make predict                        tests some sample predictions      '
 	@echo '   make push                           pushes docker image to docker hub  '
+	@echo '   make serve                          start the server for development   '
+	@echo '   make serve-prod                     start the server for production    '
+	@echo '   make tag                            tags the new docker image          '
+	@echo '   make train                          (re)trains the model               '
 	@echo '   make -n                             prints the commands without        '
 	@echo '                                       executing them                     '
 	@echo '                                                                          '
