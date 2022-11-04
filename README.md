@@ -30,6 +30,10 @@ When I was exploring the subject, I downloaded the complete dataset, but I only 
 * 2022VAERSDATA.csv
 * 2022VAERSVAX.csv
 
+## Short demo of it running on AWS
+
+[![demo](images/demo.png)](https://youtu.be/DiqvK98TG68)
+
 ## Running the model
 
 The fastest way for you to run this model is to simply get the [docker image](https://hub.docker.com/repository/docker/clamytoe/covid_risk_classifier) and run it locally.
