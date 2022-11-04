@@ -11,7 +11,7 @@ EPHEMERAL_FILES= *.log *.tmp .mypy_cache __pycache__
 RM= /bin/rm -f
 
 # Define the make commands
-.PHONY: classifier docker env dev load_test model push serve tag test train
+.PHONY: classifier docker env dev load_test model predict push serve tag train
 
 # Define the rules
 all: train model classifier docker tag serve
@@ -59,6 +59,10 @@ load_test:
 	@echo Running load tester
 	locust -H http://localhost:3000
 
+predict:
+	@echo Running prediction test
+	python predict.py
+
 push:
 	@echo Pushing image $(MY_IMAGE) to docker hub
 	docker push $(MY_IMAGE)
@@ -66,10 +70,6 @@ push:
 serve:
 	@echo Starting classifier service
 	docker run -it --rm -p 3000:3000 $(BENTOML_CLASSIFIER) serve --production
-
-test:
-	@echo Running test
-	python test_service.py
 
 # Use debug rule to check that all of the variables were
 # constructed properly.
@@ -101,6 +101,7 @@ help:
 	@echo '   make docker                         creates a new docker image         '
 	@echo '   make tag                            tags the new docker image          '
 	@echo '   make serve                          start the classification service   '
+	@echo '   make predict                        tests some sample predictions      '
 	@echo '   make push                           pushes docker image to docker hub  '
 	@echo '   make -n                             prints the commands without        '
 	@echo '                                       executing them                     '

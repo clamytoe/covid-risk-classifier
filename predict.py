@@ -5,8 +5,12 @@ import requests
 
 from service import CovidRisk
 
-actual: List[int] = [0, 1, 0, 1, 1, 0, 0, 1, 0, 0]
-patients: List[CovidRisk] = [
+HOST = {
+    "aws": "http://54.221.93.161:3000",
+    "local": "http://localhost:3000",
+}
+ACTUAL: List[int] = [0, 1, 0, 1, 1, 0, 0, 1, 0, 0]
+PATIENTS: List[CovidRisk] = [
     {
         "state": "mi",
         "age_yrs": 85,
@@ -150,11 +154,12 @@ patients: List[CovidRisk] = [
 ]
 
 
-def test_service(data: Iterable[Tuple[CovidRisk, int]]):
+def test_service(data: Iterable[Tuple[CovidRisk, int]], host: str = "local"):
+    print(f"Predicting from {host.upper()} server:")
     for patient, actual in data:
         patient = json.dumps(patient)
         response = requests.post(
-            "http://localhost:3000/classify",
+            f"{HOST[host]}/classify",
             headers={"content-type": "application/json"},
             data=patient,
         ).json()
@@ -162,5 +167,5 @@ def test_service(data: Iterable[Tuple[CovidRisk, int]]):
 
 
 if __name__ == "__main__":
-    samples = zip(patients, actual)
-    test_service(samples)
+    samples = zip(PATIENTS, ACTUAL)
+    test_service(samples, host="local")
