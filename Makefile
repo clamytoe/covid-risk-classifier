@@ -9,7 +9,7 @@ DOCKER_IMAGE= $(shell docker images $(PROJECT)_classifier | grep -v TAG | head -
 CONTAINER= $(shell docker container ls | grep covid | rev | awk '{print $$1}' | rev)
 MY_IMAGE= $(USER)/$(PROJECT)_classifier\:latest
 EPHEMERAL_FILES= *.log *.tmp .mypy_cache __pycache__
-RM= /bin/rm -f
+RM= /bin/rm -rf
 
 # Define the make commands
 .PHONY: classifier docker load_test model predict push serve serve-docker shell tag train
