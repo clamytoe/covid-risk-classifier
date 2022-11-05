@@ -840,9 +840,9 @@ def pickle_model(
 
 def main():
     # xgboost optimized params
-    eta = 0.3
+    eta = 0.1
     max_depth = 5
-    min_child_weight = 1
+    min_child_weight = 2
 
     # import and prep dataset
     df = import_datasets(DATA_DATASET, VAX_DATASET)
