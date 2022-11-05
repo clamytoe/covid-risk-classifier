@@ -2,6 +2,10 @@ __pycache__/
 .ipynb_checkpoints/
 .mypy_cache/
 data/
+images/
 *.bin
 *.ipynb
 *.log
+HOW-TO.md
+README.md
+AWS-HOWTO.md
