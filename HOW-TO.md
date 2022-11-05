@@ -422,3 +422,8 @@ locust -H http://localhost:3000
 
 Then simply open up your browser to [http://localhost:8089](http://localhost:8089) and play around with the settings.
 To stop it, simply click on the red stop button and `Ctrl+C` on the terminal to stop the service.
+
+## Want to deploy to AWS?
+
+I wrote up some instructions on how to do it for a different project, but the steps should all be the same.
+If interested, continue reading here: [AWS-HOWTO.md](AWS-HOWTO.md)
