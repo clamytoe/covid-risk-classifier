@@ -97,6 +97,41 @@ Generating classifier from latest covid_risk_model\:k5afpns3gogiq567...
 Starting classifier service for development...
 ```
 
+> **NOTE:** When running the commands `make docker` and `make tag`, make sure that you expand your terminal window!
+
+While testing, I noticed that if my terminal window isn't expanded, that the bentoml classifier name will get truncated and the end will be replaced with three periods:
+
+```bash
+bentoml list
+ Tag                               Size        Creation Time        Path
+ covid_risk_classifier:pjzbhhs4t…  434.57 KiB  2022-11-04 18:29:19  ~/bentoml/bentos/covid_risk_cla…
+ covid_risk_classifier:o5dyi3c3g…  431.65 KiB  2022-11-02 23:53:45  ~/bentoml/bentos/covid_risk_cla…
+ ```
+
+ Once expanded, I get this:
+
+ ```bash
+ bentoml list
+ Tag                                     Size        Creation Time        Path
+ covid_risk_classifier:pjzbhhs4tcmkax6a  434.57 KiB  2022-11-04 18:29:19  ~/bentoml/bentos/covid_risk_classifier/pjzbhhs4tcmkax6a
+ covid_risk_classifier:o5dyi3c3gotjoliq  431.65 KiB  2022-11-02 23:53:45  ~/bentoml/bentos/covid_risk_classifier/o5dyi3c3gotjoliq
+ ```
+
+ You can verify that your names aren't being truncated by running `make debug`:
+
+ ```bash
+make debug
+Rule -> debug
+              USER: clamytoe
+           PROJECT: covid_risk
+     BENTOML_MODEL: covid_risk_model\:pezox2c4tchdcgky
+BENTOML_CLASSIFIER: covid_risk_classifier\:pjzbhhs4tcmkax6a
+      DOCKER_IMAGE: covid_risk_classifier\:pjzbhhs4tcmkax6a_docker
+         CONTAINER:
+          MY_IMAGE: clamytoe/covid_risk_classifier\:latest
+            PICKLE: xgboost_eta=0.3_max_depth=5_min_child_weight=1.bin
+```
+
 ### train.py
 
 This script will train and save the model as a pickle file.
