@@ -26,7 +26,7 @@ These are the two datasets that were used:
 
 ## Running the model
 
-The fastest way for you to run this model is to simply get the docker image [clamytoe/covid_risk_classifier]](https://hub.docker.com/r/clamytoe/covid_risk_classifier) and run it locally.
+The fastest way for you to run this model is to simply get the docker image [clamytoe/covid_risk_classifier](https://hub.docker.com/r/clamytoe/covid_risk_classifier) and run it locally.
 
 ### Download the image
 
