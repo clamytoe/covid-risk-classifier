@@ -11,6 +11,8 @@ from sklearn.feature_extraction import DictVectorizer  # type: ignore
 from sklearn.metrics import roc_auc_score  # type: ignore
 from sklearn.model_selection import train_test_split  # type: ignore
 
+np.random.seed(1)
+
 # datasets
 DATA_DATASET = Path("data", "2022VAERSDATA.csv")
 VAX_DATASET = Path("data", "2022VAERSVAX.csv")
