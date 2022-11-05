@@ -3,8 +3,8 @@
 USER= clamytoe
 PROJECT= covid_risk
 PICKLE= $(shell ls -alt xgboost*.bin | head -n1 | awk '{print $$9}')
-BENTOML_MODEL= $(shell bentoml models list $(PROJECT)_model | grep -v Tag | head -n1 | awk '{print $$1}' | sed "s/:/\\\:/g")
-BENTOML_CLASSIFIER= $(shell bentoml list $(PROJECT)_classifier | grep -v Tag | head -n1 | awk '{print $$1}' | sed "s/:/\\\:/g")
+BENTOML_MODEL= $(shell bentoml models list -o json | grep 'tag' | grep $(PROJECT)_model | head -n1 | awk -F": \"" '{print $$2}' | sed s/\",//g | sed "s/:/\\\:/g")
+BENTOML_CLASSIFIER= $(shell bentoml list -o json | grep 'tag' | grep $(PROJECT)_classifier | head -n1 | awk -F": \"" '{print $$2}' | sed s/\",//g | sed "s/:/\\\:/g")
 DOCKER_IMAGE= $(shell docker images $(PROJECT)_classifier | grep -v TAG | head -n1 | awk '{print $$1":"$$2}' | sed "s/:/\\\:/g")_docker
 CONTAINER= $(shell docker container ls | grep covid | rev | awk '{print $$1}' | rev)
 MY_IMAGE= $(USER)/$(PROJECT)_classifier\:latest
