@@ -35,14 +35,11 @@ The model takes json as input.
 The actual schema used can be found down below in the POST section of the Service APIs area.
 Here is a description of what each feature means:
 
-* `state`: Two letter abbreviation for the your state.
-  * valid entries:
-    ['mn', 'ky', 'tn', 'tx', 'sd', 'mo', 'ny', 'mt', 'fl', 'wi', 'wa',
-     'mi', 'nj', 'nv', 'ar', 'il', 'pa', 'ms', 'ok', 'md', 'az', 'oh',
-     'ia', 'co', 'al', 'or', 'ma', 'ca', 'la', 'id', 'pr', 'nh', 'ri',
-     'in', 'ga', 'nc', 'va', 'hi', 'ks', 'me', 'ct', 'ut', 'wv', 'ne',
-     'sc', 'vt', 'de', 'nm', 'ak', 'nd', 'wy', 'gu', 'dc', 'as', 'vi',
-     'mh', 'pw', 'mp']
+* `state`: Two letter abbreviation for the United States state or territory:
+  * ak, al, ar, as, az, ca, co, ct, dc, de, fl, ga, gu, hi, ia, id, il, in, ks, ky, la,\
+  ma, md, me, mh, mi, mn, mo, mp, ms, mt, nc, nd, ne, nh, nj,
+  nm, nv, \
+  ny, oh, ok, or, pa, pr, pw, ri, sc, sd, tn, tx, ut, va, vi, vt, wa, wi, wv, wy
 * `age_yrs`: Numerical age of the patient.
   * The model was trained on ages between:
     * 0 - 107
