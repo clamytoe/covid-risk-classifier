@@ -47,6 +47,40 @@ async def classify(patient_data: CovidRisk) -> JSON:
     Args:
         patient_data (CovidRisk): json input representing the patient
 
+    Sample postive input:
+    {
+    "state": "tn",
+    "age_yrs": 87,
+    "sex": "f",
+    "l_threat": 0,
+    "disable": 0,
+    "other_meds": 0,
+    "cur_ill": 0,
+    "history": 0,
+    "prior_vax": 0,
+    "ofc_visit": 0,
+    "allergies": 0,
+    "vax_name": "moderna",
+    "vax_dose_series": 2
+    }
+
+    Sample negative input:
+    {
+    "state": "pr",
+    "age_yrs": 24,
+    "sex": "f",
+    "l_threat": 0,
+    "disable": 0,
+    "other_meds": 0,
+    "cur_ill": 0,
+    "history": 0,
+    "prior_vax": 0,
+    "ofc_visit": 0,
+    "allergies": 0,
+    "vax_name": "moderna",
+    "vax_dose_series": 3
+    }
+
     Returns:
         JSON: json formatted results of the prediction
     """
