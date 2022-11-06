@@ -8,14 +8,15 @@ BENTOML_CLASSIFIER= $(shell bentoml list -o json | grep 'tag' | grep $(PROJECT)_
 DOCKER_IMAGE= $(shell docker images $(PROJECT)_classifier | grep -v TAG | head -n1 | awk '{print $$1":"$$2}' | sed "s/:/\\\:/g")_docker
 CONTAINER= $(shell docker container ls | grep covid | rev | awk '{print $$1}' | rev)
 MY_IMAGE= $(USER)/$(PROJECT)_classifier\:latest
-EPHEMERAL_FILES= *.log *.tmp .mypy_cache __pycache__
+EPHEMERAL_FILES= *.log *.tmp *.bin .mypy_cache __pycache__
 RM= /bin/rm -rf
 
 # Define the make commands
 .PHONY: classifier docker load_test model predict push serve serve-docker shell tag train
 
 # Define the rules
-all: train model classifier serve
+all: train model classifier docker tag serve-docker
+dev: train model classifier serve
 
 # Define each of the commands and specifying their outputs
 classifier:
@@ -58,11 +59,9 @@ tag:
 	@echo Tagging $(BENTOML_CLASSIFIER) for user $(USER)...
 	docker tag $(BENTOML_CLASSIFIER) $(USER)/$(PROJECT)_classifier:latest
 
-$(PICKLE): train.py
+train:
 	@echo Training and saving the model...
 	python train.py
-
-train: $(PICKLE)
 
 # Use debug rule to check that all of the variables were
 # constructed properly.
@@ -84,7 +83,10 @@ help:
 	@echo '                                                                          '
 	@echo 'Usage:                                                                    '
 	@echo '   make help                           prints this message                '
-	@echo '   make all                            runs through the whole process     '
+	@echo '   make all                            runs through the whole process and '
+	@echo '                                       starts production server           '
+	@echo '   make dev                            runs through the initial process   '
+	@echo '   make dev                            and starts local dev server        '
 	@echo '   make classifier                     creates a new bentoml classifier   '
 	@echo '   make clean                          remove the generated files         '
 	@echo '   make debug                          prints all of the variables used   '
