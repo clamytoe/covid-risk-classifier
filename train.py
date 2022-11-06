@@ -648,7 +648,16 @@ NONE_VALUES = {
 }
 
 
-def import_datasets(data_dataset: str, vax_dataset: str) -> pd.DataFrame:
+def import_datasets(data_dataset: Path, vax_dataset: Path) -> pd.DataFrame:
+    """Imports the datasets, combines them and returns a DataFrame
+
+    Args:
+        data_dataset (str): path to the first dataset
+        vax_dataset (str): path to the second dataset
+
+    Returns:
+        pd.DataFrame: the two datasets combines
+    """
     data = pd.read_csv(data_dataset, parse_dates=DATES, encoding=CODEC, engine="python")
     vdata = pd.read_csv(vax_dataset, encoding=CODEC)
 
@@ -663,6 +672,14 @@ def import_datasets(data_dataset: str, vax_dataset: str) -> pd.DataFrame:
 
 
 def cleanup_dataset(df: pd.DataFrame) -> pd.DataFrame:
+    """Cleans up the DataFrame
+
+    Args:
+        df (pd.DataFrame): the unprocessed dataframe
+
+    Returns:
+        pd.DataFrame: the processed dataframe
+    """
     # drop unused features
     df.drop(DROP_FEATURES, axis=1, inplace=True)
 
@@ -704,11 +721,11 @@ def cleanup_dataset(df: pd.DataFrame) -> pd.DataFrame:
     categorical.remove("died")
     categorical.remove("vax_manu")
 
-    # fill temporary -1 placeholder for vax_dose_series based on its current distrubution
+    # fill temporary -1 placeholder for vax_dose_series based on its current distribution
     dose_distrubution = df.vax_dose_series.value_counts(normalize=True)
     missing_doses = df.vax_dose_series.isnull()
     df.loc[missing_doses, "vax_dose_series"] = np.random.choice(
-        dose_distrubution.index, size=len(df[missing_doses]), p=dose_distrubution.values
+        dose_distrubution.index, size=len(df[missing_doses]), p=dose_distrubution.values  # type: ignore
     )
 
     # convert str numbers to integers
@@ -722,13 +739,21 @@ def cleanup_dataset(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[missing_states, "state"] = np.random.choice(
         state_distrubution.index,
         size=len(df[missing_states]),
-        p=state_distrubution.values,
+        p=state_distrubution.values,  # type: ignore
     )
 
     return df
 
 
 def balance_dataset(df: pd.DataFrame) -> pd.DataFrame:
+    """Balances the DataFrame
+
+    Args:
+        df (pd.DataFrame): unbalanced DataFrame
+
+    Returns:
+        pd.DataFrame: balanced DataFrame
+    """
     dead = df[df.died == 1].died.count()
     shuffled_df = df.sample(frac=1, random_state=1)
     dead_df = shuffled_df[shuffled_df["died"] == 1]
@@ -737,17 +762,36 @@ def balance_dataset(df: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([dead_df, alive_df])
 
 
-def split_data(df: pd.DataFrame):
+def split_data(
+    df: pd.DataFrame,
+) -> tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+]:
+    """Splits the data for training and evaluation
+
+    Args:
+        df (pd.DataFrame): complete dataset
+
+    Returns:
+        tuple: full training set, testing set, training set, validation set
+               training target, validation target, testing target
+    """
     df_full_train, df_test = train_test_split(
         df, test_size=0.2, random_state=1, stratify=df.died
     )
     df_train, df_val = train_test_split(
-        df_full_train, test_size=0.25, random_state=1, stratify=df_full_train.died
+        df_full_train, test_size=0.25, random_state=1, stratify=df_full_train.died  # type: ignore
     )
 
-    df_train = df_train.reset_index(drop=True)
-    df_val = df_val.reset_index(drop=True)
-    df_test = df_test.reset_index(drop=True)
+    df_train = df_train.reset_index(drop=True)  # type: ignore
+    df_val = df_val.reset_index(drop=True)  # type: ignore
+    df_test = df_test.reset_index(drop=True)  # type: ignore
 
     y_train = df_train.died.values
     y_val = df_val.died.values
@@ -757,10 +801,21 @@ def split_data(df: pd.DataFrame):
     del df_val["died"]
     del df_test["died"]
 
-    return df_full_train, df_test, df_train, df_val, y_train, y_val, y_test
+    return df_full_train, df_test, df_train, df_val, y_train, y_val, y_test  # type: ignore
 
 
-def prep_data_for_xgboost(X: pd.DataFrame, X_test: pd.DataFrame):
+def prep_data_for_xgboost(
+    X: pd.DataFrame, X_test: pd.DataFrame
+) -> tuple[xgb.DMatrix, xgb.DMatrix, DictVectorizer]:
+    """Prepares the objects needed by XGBoost
+
+    Args:
+        X (pd.DataFrame): training dataset
+        X_test (pd.DataFrame): testing dataset
+
+    Returns:
+        tuple: xgb.DMatrix, xgb.DMatrix, DictVectorizer
+    """
     dfull_train = X.reset_index(drop=True)
     yfull_train = (dfull_train.died == 1).astype(int).values
     del dfull_train["died"]
@@ -794,6 +849,19 @@ def get_xgboost_model(
     dtest: xgb.DMatrix,
     y_test: np.ndarray,
 ) -> Tuple[xgb.Booster, np.ndarray]:
+    """Creates the XGB model
+
+    Args:
+        eta (float): learning rate used to prevent overfitting
+        max_depth (int): maximum depth of the decision trees
+        min_child_weight (int): minimum sum of instance weight needed in a child
+        dfulltrain (xgb.DMatrix): full training set data storage
+        dtest (xgb.DMatrix): testing set data storage
+        y_test (np.ndarray): targets for testing set validation
+
+    Returns:
+        Tuple[xgb.Booster, np.ndarray]: XGBoost model and the validation dataset
+    """
     xgb_params = {
         "eta": eta,
         "max_depth": max_depth,
@@ -813,6 +881,13 @@ def get_xgboost_model(
 
 
 def generate_samples(X_test: pd.DataFrame, y_pred: np.ndarray, y_test: np.ndarray):
+    """Input samples generator
+
+    Args:
+        X_test (pd.DataFrame): testing dataset
+        y_pred (np.ndarray): predicted values
+        y_test (np.ndarray): actual values for the training set
+    """
     sample_count = X_test.shape[0] + 1
     samples = random.sample(range(0, sample_count), 10)
 
@@ -831,6 +906,15 @@ def pickle_model(
     model: xgb.Booster,
     dv: DictVectorizer,
 ):
+    """Saves the trained model as a pickle file
+
+    Args:
+        eta (float): learning rate of the model used to prevent overfitting
+        max_depth (int): max depth of the decision trees
+        min_child_weight (int): minimum weight needed for each child
+        model (xgb.Booster): trained XGBoost model
+        dv (DictVectorizer): the DictVectorizer used to process the input data
+    """
     # save model
     output_file = Path(
         f"xgboost_eta={eta}_max_depth={max_depth}_min_child_weight={min_child_weight}.bin"
@@ -841,6 +925,7 @@ def pickle_model(
 
 
 def main():
+    """Main entry point for the script"""
     # xgboost optimized params
     eta = 0.1
     max_depth = 5
@@ -853,7 +938,7 @@ def main():
 
     # train, test, val split the dataset
     X_full_train, X_test, *_, y_test = split_data(vax_deaths_df)
-    dfulltrain, dtest, dv = prep_data_for_xgboost(X_full_train, X_test)
+    dfulltrain, dtest, dv = prep_data_for_xgboost(X_full_train, X_test)  # type: ignore
     model, y_pred = get_xgboost_model(
         eta, max_depth, min_child_weight, dfulltrain, dtest, y_test
     )

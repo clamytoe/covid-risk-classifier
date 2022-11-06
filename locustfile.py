@@ -15,11 +15,12 @@ sample: CovidRisk = {
     "allergies": 0,
     "vax_name": "moderna",
     "vax_dose_series": 2,
-}
+}  # type: ignore
 
 
 class CovidRiskTestUser(HttpUser):
-    """
+    """Load tester for the Covid Risk Classifier
+
     Usage:
         Start locust load testing client with:
             locust -H http://localhost:3000

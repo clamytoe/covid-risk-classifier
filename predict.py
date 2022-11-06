@@ -1,16 +1,16 @@
 import json
-from typing import Iterable, List, Tuple
+from typing import Iterable
 
 import requests
 
 from service import CovidRisk
 
-HOST = {
+HOST: dict[str, str] = {
     "aws": "http://54.221.93.161:3000",
     "local": "http://localhost:3000",
 }
-ACTUAL: List[int] = [0, 1, 0, 1, 1, 0, 0, 1, 0, 0]
-PATIENTS: List[CovidRisk] = [
+ACTUAL: list[int] = [0, 1, 0, 1, 1, 0, 0, 1, 0, 0]
+PATIENTS: list[dict[str, str | int]] = [
     {
         "state": "mi",
         "age_yrs": 85,
@@ -154,7 +154,17 @@ PATIENTS: List[CovidRisk] = [
 ]
 
 
-def test_service(data: Iterable[Tuple[CovidRisk, int]], host: str = "local"):
+def test_service(data: Iterable[tuple[CovidRisk, int]], host: str = "local"):
+    """Tests the covid risk classifier service
+
+    It sends ten randomly selected records from the test dataset for
+    processing.
+
+    Args:
+        data (Iterable[tuple[CovidRisk, int]]): list of CovidRisk json entries
+        host (str, optional): type of hosting service used. Defaults to "local"
+                              but can also send to AWS as well.
+    """
     print(f"Predicting from {host.upper()} server:")
     for patient, actual in data:
         patient = json.dumps(patient)
@@ -168,4 +178,4 @@ def test_service(data: Iterable[Tuple[CovidRisk, int]], host: str = "local"):
 
 if __name__ == "__main__":
     samples = zip(PATIENTS, ACTUAL)
-    test_service(samples, host="local")
+    test_service(samples, host="local")  # type: ignore

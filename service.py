@@ -13,6 +13,12 @@ logger.add(
 
 
 class CovidRisk(BaseModel):
+    """Schema for input data
+
+    Args:
+        BaseModel (class): pydantic basemodel
+    """
+
     state: str
     age_yrs: int
     sex: str
@@ -36,21 +42,28 @@ svc = bentoml.Service("covid_risk_classifier", runners=[model_runner])
 
 @svc.api(input=JSON(pydantic_model=CovidRisk), output=JSON())
 async def classify(patient_data: CovidRisk) -> JSON:
+    """Classifier for the service
+
+    Args:
+        patient_data (CovidRisk): json input representing the patient
+
+    Returns:
+        JSON: json formatted results of the prediction
+    """
     logger.info(f"Processing: {patient_data}")
     patient_info = patient_data.dict()
     vector = dv.transform(patient_info)
-    probability = await model_runner.predict.async_run(vector)
+    probability = await model_runner.predict.async_run(vector)  # type: ignore
 
     result = probability[0]
     logger.info(f"Probability: {result}")
 
     if result > 0.5:
         prediction = {"status": "DANGER", "proba": result}
-        return {"status": "DANGER", "proba": result}
     elif result > 0.25:
         prediction = {"status": "CAUTION", "proba": result}
     else:
         prediction = {"status": "SAFE", "proba": result}
 
     logger.info(f"Prediction: {prediction}")
-    return prediction
+    return prediction  # type: ignore
