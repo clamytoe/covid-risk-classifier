@@ -8,6 +8,7 @@ from service import CovidRisk
 HOST: dict[str, str] = {
     "aws": "http://54.221.93.161:3000",
     "local": "http://localhost:3000",
+    "mogenius": "https://covid-risk-cla-prod-covid-risk-classifier-mfl3rr.mo6.mogenius.io",
 }
 ACTUAL: list[int] = [0, 1, 0, 1, 1, 0, 0, 1, 0, 0]
 PATIENTS: list[dict[str, str | int]] = [
@@ -178,4 +179,4 @@ def test_service(data: Iterable[tuple[CovidRisk, int]], host: str = "local"):
 
 if __name__ == "__main__":
     samples = zip(PATIENTS, ACTUAL)
-    test_service(samples, host="local")  # type: ignore
+    test_service(samples, host="mogenius")  # type: ignore
