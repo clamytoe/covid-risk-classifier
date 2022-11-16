@@ -15,7 +15,7 @@
 
 ## What does this do?
 
-This classifier will predict the likelyhood of someone dying from taking the covid vaccination.
+This classifier will predict the likelihood of someone dying from taking the covid jab.
 The dataset was collected from the [Vaccine Adverse Event Reporting System (VAERS)](https://vaers.hhs.gov/), which is an arm of the [U.S. Department of Health & Human Services (HHS)](https://www.hhs.gov/).
 
 If you are interested in the actual raw data, the datasets can be downloaded from the VAERS Data Sets: [https://vaers.hhs.gov/data/datasets.html](https://vaers.hhs.gov/data/datasets.html).
